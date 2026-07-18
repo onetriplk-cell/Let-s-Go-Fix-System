@@ -1,0 +1,23 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Env files (each app also ignores these individually)
+.env
+.env.local
+.env.*.local
+
+# Dev server logs
+dev-out.log
+dev-err.log
+*.log
+
+# Dependency + build artifacts (each app also ignores these individually)
+node_modules/
+dist/
+dist-ssr/

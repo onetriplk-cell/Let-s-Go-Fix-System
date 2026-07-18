@@ -1,0 +1,136 @@
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import { Wrench } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/store/auth-store'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent } from '@/components/ui/card'
+import type { Profile } from '@/types/database'
+
+const registerSchema = z.object({
+  fullName: z.string().min(2, 'Enter your full name'),
+  phone: z.string().min(7, 'Enter a valid phone number'),
+  email: z.string().email('Enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+})
+
+type RegisterForm = z.infer<typeof registerSchema>
+
+export default function RegisterPage() {
+  const navigate = useNavigate()
+  const setProfile = useAuthStore((s) => s.setProfile)
+  const [submitting, setSubmitting] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterForm>({ resolver: zodResolver(registerSchema) })
+
+  const onSubmit = async (values: RegisterForm) => {
+    setSubmitting(true)
+
+    const { data, error } = await supabase.auth.signUp({
+      email: values.email,
+      password: values.password,
+      options: {
+        data: { full_name: values.fullName, role: 'customer' },
+      },
+    })
+
+    if (error || !data.user) {
+      toast.error(error?.message ?? 'Registration failed')
+      setSubmitting(false)
+      return
+    }
+
+    await supabase.from('profiles').update({ phone: values.phone }).eq('id', data.user.id)
+
+    const { error: customerError } = await supabase.from('customer_profiles').insert({
+      profile_id: data.user.id,
+    })
+
+    if (customerError) {
+      toast.error(customerError.message)
+      setSubmitting(false)
+      return
+    }
+
+    if (data.session) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single()
+      setProfile(profile as Profile)
+      toast.success('Account created')
+      navigate('/home')
+    } else {
+      toast.success('Account created — please sign in.')
+      navigate('/login')
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8">
+      <div className="w-full max-w-sm">
+        <div className="mb-6 flex flex-col items-center gap-2">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-sm">
+            <Wrench className="h-6 w-6" />
+          </div>
+          <h1 className="text-xl font-semibold text-slate-900">Create your account</h1>
+          <p className="text-sm text-slate-500">Get help on the road, fast</p>
+        </div>
+
+        <Card>
+          <CardContent className="pt-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="fullName">Full name</Label>
+                <Input id="fullName" placeholder="Nimal Perera" {...register('fullName')} />
+                {errors.fullName && <p className="text-xs text-red-600">{errors.fullName.message}</p>}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="phone">Phone number</Label>
+                <Input id="phone" placeholder="+94 77 123 4567" {...register('phone')} />
+                {errors.phone && <p className="text-xs text-red-600">{errors.phone.message}</p>}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="you@example.com" {...register('email')} />
+                {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" placeholder="••••••••" {...register('password')} />
+                {errors.password && (
+                  <p className="text-xs text-red-600">{errors.password.message}</p>
+                )}
+              </div>
+
+              <Button type="submit" variant="brand" size="lg" disabled={submitting} className="mt-2">
+                {submitting ? 'Creating account…' : 'Create account'}
+              </Button>
+            </form>
+
+            <p className="mt-4 text-center text-sm text-slate-500">
+              Already have an account?{' '}
+              <Link to="/login" className="font-medium text-brand-600 hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
