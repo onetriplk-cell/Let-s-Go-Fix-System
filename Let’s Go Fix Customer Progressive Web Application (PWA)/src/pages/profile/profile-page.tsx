@@ -4,14 +4,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { LogOut } from 'lucide-react'
+import { LogOut, MoonStar } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/auth-store'
+import { useThemeStore } from '@/store/theme-store'
 import { TopBar } from '@/components/layout/top-bar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ThemeToggle } from '@/components/common/theme-toggle'
 
 const profileSchema = z.object({
   fullName: z.string().min(2, 'Enter your name'),
@@ -90,11 +92,13 @@ export default function ProfilePage() {
     await supabase.auth.signOut()
   }
 
+  const theme = useThemeStore((s) => s.theme)
+
   return (
     <div>
       <TopBar title="Profile" subtitle="Manage your account" />
 
-      <div className="flex flex-col gap-4 p-4">
+      <div className="mx-auto flex max-w-md flex-col gap-4 p-4 sm:max-w-2xl sm:p-8">
         <Card>
           <CardHeader>
             <CardTitle>Personal details</CardTitle>
@@ -104,7 +108,7 @@ export default function ProfilePage() {
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="fullName">Full name</Label>
                 <Input id="fullName" {...register('fullName')} />
-                {errors.fullName && <p className="text-xs text-red-600">{errors.fullName.message}</p>}
+                {errors.fullName && <p className="text-xs text-red-600 dark:text-red-400">{errors.fullName.message}</p>}
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="phone">Phone number</Label>
@@ -125,11 +129,37 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Button variant="outline" onClick={handleLogout} className="border-red-200 text-red-600 hover:bg-red-50">
+        <Card>
+          <CardHeader>
+            <CardTitle>Appearance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+                  <MoonStar className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Dark mode</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {theme === 'dark' ? 'Currently on' : 'Currently off'}
+                  </p>
+                </div>
+              </div>
+              <ThemeToggle />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Button
+          variant="outline"
+          onClick={handleLogout}
+          className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10"
+        >
           <LogOut className="h-4 w-4" /> Sign out
         </Button>
 
-        <p className="text-center text-xs text-slate-400">Let's Go Fix — prototype build</p>
+        <p className="text-center text-xs text-slate-400 dark:text-slate-600">Let's Go Fix — prototype build</p>
       </div>
     </div>
   )

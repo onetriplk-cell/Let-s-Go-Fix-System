@@ -11,7 +11,7 @@ const NAV_ITEMS = [
 
 export function BottomNav() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur safe-bottom">
+    <nav className="glass fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 safe-bottom sm:hidden dark:border-slate-800">
       <div className="mx-auto flex max-w-md items-stretch justify-around">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
           <NavLink
@@ -20,13 +20,13 @@ export function BottomNav() {
             className={({ isActive }) =>
               cn(
                 'flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors',
-                isActive ? 'text-brand-600' : 'text-slate-400',
+                isActive ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400 dark:text-slate-600',
               )
             }
           >
             {({ isActive }) => (
               <>
-                <Icon className={cn('h-5 w-5', isActive && 'fill-brand-100')} />
+                <Icon className={cn('h-5 w-5', isActive && 'fill-brand-100 dark:fill-brand-500/20')} />
                 {label}
               </>
             )}

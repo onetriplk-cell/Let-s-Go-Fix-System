@@ -1,8 +1,14 @@
 import { useEffect, useRef } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { MAPBOX_TOKEN, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/lib/mapbox'
+import { useThemeStore } from '@/store/theme-store'
 
 mapboxgl.accessToken = MAPBOX_TOKEN
+
+const MAP_STYLE = {
+  light: 'mapbox://styles/mapbox/streets-v12',
+  dark: 'mapbox://styles/mapbox/dark-v11',
+}
 
 export interface MapMarker {
   id: string
@@ -34,13 +40,14 @@ export function MapboxMap({
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map())
   const onClickRef = useRef(onClick)
   onClickRef.current = onClick
+  const theme = useThemeStore((s) => s.theme)
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: MAP_STYLE[theme],
       center,
       zoom,
       interactive,
@@ -67,7 +74,19 @@ export function MapboxMap({
     mapRef.current.flyTo({ center, zoom, duration: 600 })
   }, [center, zoom])
 
+  const isFirstStyleRender = useRef(true)
   useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    if (isFirstStyleRender.current) {
+      isFirstStyleRender.current = false
+      return
+    }
+    map.setStyle(MAP_STYLE[theme])
+  }, [theme])
+
+  const syncMarkers = useRef<() => void>(() => {})
+  syncMarkers.current = () => {
     const map = mapRef.current
     if (!map) return
 
@@ -104,7 +123,24 @@ export function MapboxMap({
         markersRef.current.set(m.id, marker)
       }
     }
+  }
+
+  useEffect(() => {
+    syncMarkers.current()
   }, [markers])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const handleStyleLoad = () => {
+      markersRef.current.clear()
+      syncMarkers.current()
+    }
+    map.on('style.load', handleStyleLoad)
+    return () => {
+      map.off('style.load', handleStyleLoad)
+    }
+  }, [])
 
   return <div ref={containerRef} className={className ?? 'h-64 w-full'} />
 }

@@ -9,6 +9,7 @@ export interface HistoryRow {
   final_price: number | null
   quoted_price: number | null
   requested_at: string
+  category_id: string | null
   category_name: string
   provider_name: string | null
   has_review: boolean
@@ -24,7 +25,7 @@ export function useRequestHistory() {
         .from('service_requests')
         .select(
           `id, status, pickup_address, final_price, quoted_price, requested_at,
-           category:service_categories!inner(name),
+           category:service_categories!inner(id, name),
            provider:provider_profiles(business_name),
            reviews(id)`,
         )
@@ -40,6 +41,7 @@ export function useRequestHistory() {
         final_price: row.final_price,
         quoted_price: row.quoted_price,
         requested_at: row.requested_at,
+        category_id: row.category?.id ?? null,
         category_name: row.category?.name ?? '—',
         provider_name: row.provider?.business_name ?? null,
         has_review: (row.reviews ?? []).length > 0,

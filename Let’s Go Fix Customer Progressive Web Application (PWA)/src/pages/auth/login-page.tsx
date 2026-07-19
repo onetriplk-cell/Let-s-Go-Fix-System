@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+import { ThemeToggle } from '@/components/common/theme-toggle'
 import type { Profile } from '@/types/database'
 
 const loginSchema = z.object({
@@ -64,18 +65,28 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-6 flex flex-col items-center gap-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-sm">
-            <Wrench className="h-6 w-6" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-4 dark:bg-slate-950">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-60 dark:opacity-40"
+        style={{
+          background:
+            'radial-gradient(60% 50% at 50% 0%, color-mix(in oklab, var(--color-brand-200) 60%, transparent) 0%, transparent 70%)',
+        }}
+      />
+
+      <ThemeToggle className="absolute right-4 top-4" />
+
+      <div className="relative w-full max-w-sm sm:max-w-md">
+        <div className="mb-6 flex flex-col items-center gap-2 sm:mb-8">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-sm shadow-brand-600/30 sm:h-14 sm:w-14 dark:bg-brand-500">
+            <Wrench className="h-6 w-6 sm:h-7 sm:w-7" />
           </div>
-          <h1 className="text-xl font-semibold text-slate-900">Let's Go Fix</h1>
-          <p className="text-sm text-slate-500">Roadside assistance, on demand</p>
+          <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl dark:text-slate-100">Let's Go Fix</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Roadside assistance, on demand</p>
         </div>
 
-        <Card>
-          <CardContent className="pt-5">
+        <Card className="sm:shadow-md">
+          <CardContent className="pt-5 sm:p-6">
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="email">Email</Label>
@@ -86,7 +97,7 @@ export default function LoginPage() {
                   autoComplete="email"
                   {...register('email')}
                 />
-                {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
+                {errors.email && <p className="text-xs text-red-600 dark:text-red-400">{errors.email.message}</p>}
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -99,7 +110,7 @@ export default function LoginPage() {
                   {...register('password')}
                 />
                 {errors.password && (
-                  <p className="text-xs text-red-600">{errors.password.message}</p>
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.password.message}</p>
                 )}
               </div>
 
@@ -108,9 +119,9 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <p className="mt-4 text-center text-sm text-slate-500">
+            <p className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
               New here?{' '}
-              <Link to="/register" className="font-medium text-brand-600 hover:underline">
+              <Link to="/register" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
                 Create an account
               </Link>
             </p>

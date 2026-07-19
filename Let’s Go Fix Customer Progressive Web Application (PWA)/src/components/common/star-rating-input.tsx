@@ -9,7 +9,7 @@ export function StarRatingInput({ value, onChange }: { value: number; onChange: 
           <Star
             className={cn(
               'h-6 w-6 transition-colors',
-              n <= value ? 'fill-amber-400 text-amber-400' : 'text-slate-300',
+              n <= value ? 'fill-amber-400 text-amber-400' : 'text-slate-300 dark:text-slate-700',
             )}
           />
         </button>
